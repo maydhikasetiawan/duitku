@@ -54,7 +54,7 @@ export function renderAuth(onLogin) {
     } else {
       const { error } = await supabase.auth.signUp({ email, password })
       if (error) { showError(error.message); resetBtn(); return }
-      showError('✅ Akun dibuat! Silakan masuk.')
+      showError('✅ Akun dibuat! Cek email lo untuk verifikasi, lalu kembali ke sini untuk masuk.')
       resetBtn(); return
     }
 
