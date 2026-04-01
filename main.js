@@ -8,6 +8,7 @@ import {
   getBudgets, saveBudget,
   getGoals, addGoal, updateGoalSaved, deleteGoal,
 } from './src/storage.js'
+import { renderVerified } from './src/verified.js'
 
 // ── KATEGORI ──
 const CATEGORIES = [
@@ -35,6 +36,18 @@ let state = {
 
 // ── INIT ──
 async function init() {
+  // Cek apakah ini redirect dari konfirmasi email
+  const hash = window.location.hash
+  const params = new URLSearchParams(hash.replace('#', '?'))
+  const type = params.get('type')
+
+  if (type === 'signup') {
+    // Logout dulu biar tidak auto login
+    await supabase.auth.signOut()
+    renderVerified()
+    return
+  }
+
   const { data: { session } } = await supabase.auth.getSession()
 
   if (!session) {
