@@ -9,6 +9,7 @@ import {
   getGoals, addGoal, updateGoalSaved, deleteGoal,
 } from './src/storage.js'
 import { renderVerified } from './src/verified.js'
+import { renderResetPassword } from './src/auth.js'
 
 // ── KATEGORI ──
 const CATEGORIES = [
@@ -36,15 +37,19 @@ let state = {
 
 // ── INIT ──
 async function init() {
-  // Cek apakah ini redirect dari konfirmasi email
+  // Cek apakah ini redirect dari konfirmasi email atau reset password
   const hash = window.location.hash
   const params = new URLSearchParams(hash.replace('#', '?'))
   const type = params.get('type')
 
   if (type === 'signup') {
-    // Logout dulu biar tidak auto login
     await supabase.auth.signOut()
     renderVerified()
+    return
+  }
+
+  if (type === 'recovery') {
+    renderResetPassword(() => init())
     return
   }
 
@@ -72,6 +77,18 @@ async function init() {
   state.transactions = transactions
   state.budgets = budgets
   state.goals = goals
+
+  // Simpan nama dari registrasi ke database
+  const pendingName = localStorage.getItem('duitku_pending_name')
+  if (pendingName) {
+    const { firstName, lastName } = JSON.parse(pendingName)
+    if (firstName && !state.settings.first_name) {
+      state.settings.first_name = firstName
+      state.settings.last_name = lastName
+      await saveSettings(state.settings)
+    }
+    localStorage.removeItem('duitku_pending_name')
+  }
 
   renderApp()
   fetchGoldPrice()
