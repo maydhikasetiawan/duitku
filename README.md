@@ -113,7 +113,7 @@ Buka `http://localhost:5173` di browser.
 
 **Maydhika Putra Setiawan**  
 📧 maydhikasetiawan@gmail.com  
-🔗 [LinkedIn](https://linkedin.com/in/maydhikasetiawan)  
+🔗 [LinkedIn](https://linkedin.com/in/maydhikaputra)  
 💻 [GitHub](https://github.com/maydhikasetiawan)
 
 ---
