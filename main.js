@@ -10,6 +10,7 @@ import {
 } from './src/storage.js'
 import { renderVerified } from './src/verified.js'
 import { renderResetPassword } from './src/auth.js'
+import { renderProfile, attachProfileListeners } from './src/profile.js'
 
 // ── KATEGORI ──
 const CATEGORIES = [
@@ -170,6 +171,7 @@ function renderApp() {
       <div class="page" id="page-akun">${renderAkun()}</div>
       <div class="page" id="page-budget">${renderBudget()}</div>
       <div class="page" id="page-goals">${renderGoals()}</div>
+      <div class="page" id="page-profil">${renderProfile(state, () => init(), () => { renderApp() })}</div>
     </div>
     <button class="fab" id="fabBtn">+</button>
     <div class="bottom-nav">
@@ -185,8 +187,8 @@ function renderApp() {
       <button class="bottom-nav-item" data-page="goals">
         <span class="nav-icon">🏆</span>Target
       </button>
-      <button class="bottom-nav-item" data-page="logout">
-        <span class="nav-icon">🚪</span>Keluar
+      <button class="bottom-nav-item" data-page="profil">
+        <span class="nav-icon">👤</span>Profil
       </button>
     </div>
     ${renderModal()}
@@ -443,7 +445,14 @@ function attachEventListeners() {
   document.querySelectorAll('.bottom-nav-item').forEach(btn => {
     btn.addEventListener('click', () => {
       const page = btn.dataset.page
-      if (page === 'logout') { handleLogout(); return }
+      if (page === 'profil') {
+        document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'))
+        document.querySelectorAll('.bottom-nav-item').forEach(b=>b.classList.remove('active'))
+        document.getElementById('page-profil').classList.add('active')
+        btn.classList.add('active')
+        attachProfileListeners(state, () => init(), () => renderApp())
+        return
+      }
       document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'))
       document.querySelectorAll('.bottom-nav-item').forEach(b=>b.classList.remove('active'))
       document.getElementById('page-'+page).classList.add('active')
