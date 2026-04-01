@@ -119,3 +119,10 @@ Buka `http://localhost:5173` di browser.
 ---
 
 > Dibangun sebagai project portofolio untuk mendemonstrasikan implementasi PWA, cloud database, dan autentikasi pada aplikasi web modern.
+
+---
+
+## 📄 Lisensi
+
+Didistribusikan di bawah [MIT License](LICENSE).  
+© 2026 Maydhika Putra Setiawan
