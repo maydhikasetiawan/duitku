@@ -38,14 +38,16 @@ let state = {
 
 // ── INIT ──
 async function init() {
-  // DEBUG — hapus setelah selesai
   console.log('hash:', window.location.hash)
   console.log('href:', window.location.href)
 
-  // Cek URL untuk recovery dan signup
-  const hash = window.location.hash.substring(1)
-  const params = new URLSearchParams(hash)
+  // Fix: handle double # dari Supabase
+  const fullHash = window.location.hash
+  const cleanHash = fullHash.substring(1).replace(/#/g, '&')
+  const params = new URLSearchParams(cleanHash)
   const type = params.get('type')
+
+  console.log('type:', type) // debug
 
   if (type === 'signup') {
     await supabase.auth.signOut()
