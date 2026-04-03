@@ -56,7 +56,7 @@ async function init() {
   }
 
   if (type === 'recovery') {
-  renderResetPassword(() => {
+  await renderResetPassword(() => {
     window.location.href = '/'
   })
   return

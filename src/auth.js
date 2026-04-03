@@ -167,8 +167,26 @@ function renderForgotPassword(onLogin) {
 }
 
 // ── RESET PASSWORD ──
-export function renderResetPassword(onLogin) {
+export async function renderResetPassword(onLogin) {
   const app = document.getElementById('app')
+
+  // Extract token dari URL manual karena format double #
+  const fullHash = window.location.hash
+  const cleanHash = fullHash.substring(1).replace(/#/g, '&')
+  const params = new URLSearchParams(cleanHash)
+  const accessToken = params.get('access_token')
+  const refreshToken = params.get('refresh_token')
+
+  // Set session manual
+  let sessionReady = false
+  if (accessToken && refreshToken) {
+    const { error } = await supabase.auth.setSession({
+      access_token: accessToken,
+      refresh_token: refreshToken,
+    })
+    if (!error) sessionReady = true
+  }
+
   app.innerHTML = `
     <div class="auth-page">
       <div class="auth-logo">Duit<span>Ku</span></div>
@@ -176,31 +194,29 @@ export function renderResetPassword(onLogin) {
       <div class="auth-card">
         <div class="auth-title">Reset Password</div>
         <div class="auth-error" id="authError"></div>
-        <div id="resetForm">
-          <div class="form-group">
-            <label class="form-label">Password Baru</label>
-            <input class="form-input" type="password" id="newPassword" placeholder="Minimal 6 karakter">
-          </div>
-          <div class="form-group">
-            <label class="form-label">Ulangi Password Baru</label>
-            <input class="form-input" type="password" id="confirmPassword" placeholder="Ulangi password baru">
-          </div>
-          <button class="btn-primary" id="btnResetPassword">Simpan Password Baru</button>
+        ${!sessionReady ? '<p style="color:var(--accent);font-size:14px;">Link tidak valid atau sudah expired. Minta link reset baru.</p>' : `
+        <div class="form-group">
+          <label class="form-label">Password Baru</label>
+          <input class="form-input" type="password" id="newPassword" placeholder="Minimal 6 karakter">
         </div>
+        <div class="form-group">
+          <label class="form-label">Ulangi Password Baru</label>
+          <input class="form-input" type="password" id="confirmPassword" placeholder="Ulangi password baru">
+        </div>
+        <button class="btn-primary" id="btnResetPassword">Simpan Password Baru</button>
+        `}
+        <button class="btn-secondary" id="btnBackToLogin" style="margin-top:8px;">Kembali ke Login</button>
       </div>
     </div>
   `
 
-  // Tunggu Supabase proses token dari URL
-  const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
-    if (event === 'PASSWORD_RECOVERY') {
-      // Session siap, aktifkan form
-      document.getElementById('resetForm').style.opacity = '1'
-      subscription.unsubscribe()
-    }
+  document.getElementById('btnBackToLogin')?.addEventListener('click', () => {
+    window.location.href = '/'
   })
 
-  document.getElementById('btnResetPassword').addEventListener('click', async () => {
+  if (!sessionReady) return
+
+  document.getElementById('btnResetPassword')?.addEventListener('click', async () => {
     const newPassword = document.getElementById('newPassword').value
     const confirmPassword = document.getElementById('confirmPassword').value
     const btn = document.getElementById('btnResetPassword')
@@ -211,22 +227,16 @@ export function renderResetPassword(onLogin) {
 
     btn.textContent = 'Menyimpan...'; btn.disabled = true
 
-    // DEBUG
-    const { data: sessionData } = await supabase.auth.getSession()
-    console.log('session saat reset:', sessionData?.session)
-
     const { error } = await supabase.auth.updateUser({ password: newPassword })
-    console.log('error updateUser:', error)
-    
     if (error) {
-      showResetError('Gagal reset password. Coba lagi.')
+      showResetError('Gagal reset password: ' + error.message)
       btn.textContent = 'Simpan Password Baru'; btn.disabled = false
       return
     }
 
     showResetError('✅ Password berhasil diubah! Silakan masuk.')
     await supabase.auth.signOut()
-    setTimeout(() => onLogin(), 2000)
+    setTimeout(() => { window.location.href = '/' }, 2000)
   })
 
   function showResetError(msg) {
