@@ -6,23 +6,46 @@
 
 ---
 
-## 📱 Tampilan
+## 📱 Tentang DuitKu
 
-DuitKu dirancang dengan pendekatan **mobile-first** dan dapat diinstall langsung ke homescreen Android sebagai Progressive Web App (PWA).
+DuitKu adalah aplikasi pencatat keuangan pribadi yang dibangun dengan pendekatan **mobile-first** dan dapat diinstall langsung ke homescreen Android sebagai Progressive Web App (PWA). Data tersimpan di cloud sehingga bisa diakses dari perangkat manapun.
 
 ---
 
 ## ✨ Fitur
 
-- 📊 **Dashboard** — Total kekayaan bersih, arus kas bulanan, dan riwayat transaksi
-- 💵 **Multi Akun** — Kas, beberapa rekening bank, investasi, dan emas Pegadaian
-- 🥇 **Tracking Emas** — Input gramasi emas dengan harga live otomatis atau manual
-- 🎯 **Budget** — Alokasi dan monitoring pengeluaran per kategori
-- 🏆 **Target Tabungan** — Kalkulasi otomatis tabungan per bulan untuk mencapai target
-- ✕ **Void Transaksi** — Pembatalan transaksi dengan reversal saldo otomatis
-- 🔐 **Autentikasi** — Login dan register dengan email & password
-- ☁️ **Cloud Storage** — Data tersimpan di cloud, bisa diakses dari perangkat manapun
-- 📲 **PWA** — Installable di Android, tampil fullscreen layaknya aplikasi native
+**💳 Manajemen Akun & Saldo**
+- Kas / dompet, multi rekening bank, investasi
+- Tracking emas Pegadaian dengan harga live otomatis (XAU/IDR) atau input manual
+- Net worth otomatis dari semua akun
+
+**📝 Transaksi**
+- Catat pemasukan & pengeluaran per akun
+- Pilih kategori pengeluaran
+- Void transaksi dengan reversal saldo otomatis
+- Riwayat 15 transaksi terbaru di dashboard
+
+**🎯 Budget & Target**
+- Alokasi budget per kategori dengan progress bar
+- Target tabungan berjangka — kalkulasi otomatis tabungan per bulan
+- Estimasi bulan tercapainya target
+
+**👤 Profil & Akun**
+- Edit nama depan & belakang
+- Ganti password (verifikasi password lama)
+- Hapus akun dengan 3 lapis validasi
+- Tombol install app langsung dari profil
+
+**🔐 Autentikasi Lengkap**
+- Register dengan nama, email, dan password
+- Verifikasi email dengan template branded
+- Lupa password — reset via email
+- Halaman konfirmasi setelah verifikasi & reset password
+
+**📲 PWA**
+- Installable di Android layaknya aplikasi native
+- Tampil fullscreen tanpa browser bar
+- Service worker dengan strategi network-first
 
 ---
 
@@ -34,6 +57,7 @@ DuitKu dirancang dengan pendekatan **mobile-first** dan dapat diinstall langsung
 | [Vite](https://vitejs.dev) | Build tool & development server |
 | [Supabase](https://supabase.com) | Backend as a Service — database & autentikasi |
 | [Netlify](https://netlify.com) | Hosting & continuous deployment |
+| Gmail SMTP | Custom email untuk verifikasi & reset password |
 | GitHub | Version control |
 
 ---
@@ -41,11 +65,11 @@ DuitKu dirancang dengan pendekatan **mobile-first** dan dapat diinstall langsung
 ## 🗄️ Struktur Database (Supabase)
 
 ```
-transactions   — Riwayat pemasukan & pengeluaran
-bank_accounts  — Daftar rekening bank
+transactions   — Riwayat pemasukan & pengeluaran per user
+bank_accounts  — Daftar rekening bank (multi akun)
 budgets        — Alokasi budget per kategori
 goals          — Target tabungan berjangka
-settings       — Saldo kas, investasi, dan data emas
+settings       — Saldo kas, investasi, data emas, dan nama user
 ```
 
 Semua tabel dilindungi dengan **Row Level Security (RLS)** — setiap user hanya bisa mengakses data miliknya sendiri.
@@ -57,18 +81,21 @@ Semua tabel dilindungi dengan **Row Level Security (RLS)** — setiap user hanya
 ```
 duitku/
 ├── public/
-│   ├── icon.svg          # App icon
-│   ├── manifest.json     # PWA manifest
-│   └── sw.js             # Service worker
+│   ├── icon.svg            # App icon (huruf D merah)
+│   ├── manifest.json       # PWA manifest
+│   └── sw.js               # Service worker (network-first)
 ├── src/
-│   ├── auth.js           # Halaman login & register
-│   ├── storage.js        # Semua operasi database (Supabase)
-│   ├── toast.js          # Notifikasi toast
-│   └── style.css         # Global styles
+│   ├── auth.js             # Login, register, lupa & reset password
+│   ├── profile.js          # Halaman profil user
+│   ├── storage.js          # Semua operasi database (Supabase)
+│   ├── toast.js            # Notifikasi toast
+│   ├── verified.js         # Halaman konfirmasi email
+│   └── style.css           # Global styles
 ├── index.html
-├── main.js               # Entry point & render logic
-├── supabase.js           # Supabase client
-└── vite.config.js
+├── main.js                 # Entry point, render logic & routing
+├── supabase.js             # Supabase client
+├── vite.config.js          # Vite configuration
+└── netlify.toml            # Netlify build & redirect config
 ```
 
 ---
@@ -99,13 +126,30 @@ npm run dev
 
 Buka `http://localhost:5173` di browser.
 
+**5. Build untuk production:**
+```bash
+npm run build
+```
+
 ---
 
 ## 📲 Install di Android
 
 1. Buka [webduitku.netlify.app](https://webduitku.netlify.app) di Chrome Android
-2. Ketuk menu **⋮** → **Add to Home Screen**
-3. DuitKu siap digunakan layaknya aplikasi native
+2. Login ke akun DuitKu
+3. Buka halaman **Profil** → ketuk **Install Aplikasi**
+4. Atau ketuk menu **⋮** → **Add to Home Screen**
+5. DuitKu siap digunakan layaknya aplikasi native
+
+---
+
+## 🔒 Keamanan
+
+- Row Level Security (RLS) aktif di semua tabel
+- XSS protection dengan sanitasi input (`escapeHtml`)
+- Password lama diverifikasi sebelum ganti password baru
+- Hapus akun memerlukan 3 lapis konfirmasi termasuk ketik ulang email
+- Credentials Supabase disimpan di environment variables, tidak di kode
 
 ---
 
@@ -118,7 +162,7 @@ Buka `http://localhost:5173` di browser.
 
 ---
 
-> Dibangun sebagai project portofolio untuk mendemonstrasikan implementasi PWA, cloud database, dan autentikasi pada aplikasi web modern.
+> Dibangun sebagai project portofolio untuk mendemonstrasikan implementasi PWA, cloud database, autentikasi lengkap, dan keamanan aplikasi web modern.
 
 ---
 
