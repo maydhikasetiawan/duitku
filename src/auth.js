@@ -176,18 +176,29 @@ export function renderResetPassword(onLogin) {
       <div class="auth-card">
         <div class="auth-title">Reset Password</div>
         <div class="auth-error" id="authError"></div>
-        <div class="form-group">
-          <label class="form-label">Password Baru</label>
-          <input class="form-input" type="password" id="newPassword" placeholder="Minimal 6 karakter">
+        <div id="resetForm">
+          <div class="form-group">
+            <label class="form-label">Password Baru</label>
+            <input class="form-input" type="password" id="newPassword" placeholder="Minimal 6 karakter">
+          </div>
+          <div class="form-group">
+            <label class="form-label">Ulangi Password Baru</label>
+            <input class="form-input" type="password" id="confirmPassword" placeholder="Ulangi password baru">
+          </div>
+          <button class="btn-primary" id="btnResetPassword">Simpan Password Baru</button>
         </div>
-        <div class="form-group">
-          <label class="form-label">Ulangi Password Baru</label>
-          <input class="form-input" type="password" id="confirmPassword" placeholder="Ulangi password baru">
-        </div>
-        <button class="btn-primary" id="btnResetPassword">Simpan Password Baru</button>
       </div>
     </div>
   `
+
+  // Tunggu Supabase proses token dari URL
+  const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
+    if (event === 'PASSWORD_RECOVERY') {
+      // Session siap, aktifkan form
+      document.getElementById('resetForm').style.opacity = '1'
+      subscription.unsubscribe()
+    }
+  })
 
   document.getElementById('btnResetPassword').addEventListener('click', async () => {
     const newPassword = document.getElementById('newPassword').value
@@ -209,7 +220,7 @@ export function renderResetPassword(onLogin) {
 
     showResetError('✅ Password berhasil diubah! Silakan masuk.')
     await supabase.auth.signOut()
-    setTimeout(() => renderAuth(onLogin), 2000)
+    setTimeout(() => onLogin(), 2000)
   })
 
   function showResetError(msg) {
