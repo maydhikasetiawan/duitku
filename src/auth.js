@@ -211,7 +211,13 @@ export function renderResetPassword(onLogin) {
 
     btn.textContent = 'Menyimpan...'; btn.disabled = true
 
+    // DEBUG
+    const { data: sessionData } = await supabase.auth.getSession()
+    console.log('session saat reset:', sessionData?.session)
+
     const { error } = await supabase.auth.updateUser({ password: newPassword })
+    console.log('error updateUser:', error)
+    
     if (error) {
       showResetError('Gagal reset password. Coba lagi.')
       btn.textContent = 'Simpan Password Baru'; btn.disabled = false
