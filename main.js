@@ -56,13 +56,10 @@ async function init() {
   }
 
   if (type === 'recovery') {
-    const { data } = await supabase.auth.getSession()
-    if (data?.session) {
-      renderResetPassword(() => {
-        window.location.href = '/'
-      })
-      return
-    }
+  renderResetPassword(() => {
+    window.location.href = '/'
+  })
+  return
   }
 
   const { data: { session } } = await supabase.auth.getSession()
