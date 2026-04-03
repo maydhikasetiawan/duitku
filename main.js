@@ -38,9 +38,9 @@ let state = {
 
 // ── INIT ──
 async function init() {
-  // Cek apakah ini redirect dari konfirmasi email atau reset password
-  const hash = window.location.hash
-  const params = new URLSearchParams(hash.replace('#', '?'))
+  // Cek URL untuk recovery dan signup
+  const hash = window.location.hash.substring(1)
+  const params = new URLSearchParams(hash)
   const type = params.get('type')
 
   if (type === 'signup') {
@@ -50,8 +50,14 @@ async function init() {
   }
 
   if (type === 'recovery') {
-    renderResetPassword(() => init())
-    return
+    // Biarkan Supabase proses token dulu
+    const { data, error } = await supabase.auth.getSession()
+    if (data?.session) {
+      renderResetPassword(() => {
+        window.location.href = '/'
+      })
+      return
+    }
   }
 
   const { data: { session } } = await supabase.auth.getSession()
