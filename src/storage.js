@@ -16,26 +16,24 @@ export async function getSettings() {
     .single()
 
   if (error || !data) {
-    return { kas: 0, invest: 0, emas_gram: 0, emas_harga_manual: 0 }
+    return { kas: 0, invest: 0, emas_gram: 0, emas_harga_manual: 0, first_name: '', last_name: '' }
   }
   return data
 }
 
 export async function saveSettings(settings) {
   const user = await getCurrentUser()
-  
   const { error } = await supabase
     .from('settings')
-    .upsert(
-      { 
-        user_id: user.id,
-        kas: settings.kas || 0,
-        invest: settings.invest || 0,
-        emas_gram: settings.emas_gram || 0,
-        emas_harga_manual: settings.emas_harga_manual || 0,
-      },
-      { onConflict: 'user_id' }
-    )
+    .upsert({
+      user_id: user.id,
+      kas: settings.kas || 0,
+      invest: settings.invest || 0,
+      emas_gram: settings.emas_gram || 0,
+      emas_harga_manual: settings.emas_harga_manual || 0,
+      first_name: settings.first_name || '',
+      last_name: settings.last_name || '',
+    }, { onConflict: 'user_id' })
 
   if (error) {
     console.log('saveSettings error:', error)

@@ -187,20 +187,18 @@ export function attachProfileListeners(state, onLogout, onSave) {
     showToast('Menghapus akun...')
 
     try {
-      // Hapus semua data user
-      const uid = state.user.id
-      await supabase.from('transactions').delete().eq('user_id', uid)
-      await supabase.from('bank_accounts').delete().eq('user_id', uid)
-      await supabase.from('budgets').delete().eq('user_id', uid)
-      await supabase.from('goals').delete().eq('user_id', uid)
-      await supabase.from('settings').delete().eq('user_id', uid)
-
-      // Hapus user dari auth
-      await supabase.auth.admin.deleteUser(uid)
-      await supabase.auth.signOut()
-      onLogout()
-    } catch(e) {
-      showToast('Gagal hapus akun. Hubungi admin.', 'error')
-    }
+  const uid = state.user.id
+  await supabase.from('transactions').delete().eq('user_id', uid)
+  await supabase.from('bank_accounts').delete().eq('user_id', uid)
+  await supabase.from('budgets').delete().eq('user_id', uid)
+  await supabase.from('goals').delete().eq('user_id', uid)
+  await supabase.from('settings').delete().eq('user_id', uid)
+  // Hapus user via SQL function
+  await supabase.rpc('delete_user')
+  await supabase.auth.signOut()
+  onLogout()
+} catch(e) {
+  showToast('Gagal hapus akun. Hubungi admin.', 'error')
+}
   })
 }
