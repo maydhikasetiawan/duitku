@@ -38,6 +38,10 @@ let state = {
 
 // ── INIT ──
 async function init() {
+  // DEBUG — hapus setelah selesai
+  console.log('hash:', window.location.hash)
+  console.log('href:', window.location.href)
+
   // Cek URL untuk recovery dan signup
   const hash = window.location.hash.substring(1)
   const params = new URLSearchParams(hash)
@@ -50,8 +54,7 @@ async function init() {
   }
 
   if (type === 'recovery') {
-    // Biarkan Supabase proses token dulu
-    const { data, error } = await supabase.auth.getSession()
+    const { data } = await supabase.auth.getSession()
     if (data?.session) {
       renderResetPassword(() => {
         window.location.href = '/'
